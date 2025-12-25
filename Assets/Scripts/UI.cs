@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
-    [SerializeField] private float startTime = 30f;  
+    [SerializeField] private float startTime = 60f;  
     [SerializeField] private GameObject gameOverUI;
     [SerializeField] private GameObject victoryUI;
     [SerializeField] private TextMeshProUGUI timerText;
@@ -14,6 +14,8 @@ public class UI : MonoBehaviour
     [SerializeField] private Button restartButton;
     [SerializeField] private GameObject exitDoor;
     [SerializeField] private int totalFragments = 5;
+    [SerializeField] private float timeAddedPerFragment = 10f;
+    
     private float currentTime;
     private bool isGameOver = false;
     private bool isVictory = false;
@@ -37,15 +39,19 @@ public class UI : MonoBehaviour
     void Update()
     {
         if (isGameOver || isVictory) return;
-        
+
         if (currentTime > 0)
         {
             currentTime -= Time.deltaTime;
             currentTime = Mathf.Max(currentTime, 0);
         }
-        
+
         if (timerText != null) 
-            timerText.text = Mathf.Ceil(currentTime).ToString();
+        {
+            int minutes = Mathf.FloorToInt(currentTime / 60f);
+            int seconds = Mathf.FloorToInt(currentTime % 60f);
+            timerText.text = $"{minutes}:{seconds:00}";
+        }
 
         if (lightDebugText != null)
         {
@@ -56,10 +62,10 @@ public class UI : MonoBehaviour
                 lightDebugText.text = $"Light: {percentage:F0}%";
             }
         }
-        
+
         if (currentTime <= 0f && !isGameOver)
         {
-            TriggerGameOver();
+            TriggerGameOver("Time ran out!");
         }
     }
     
@@ -68,35 +74,31 @@ public class UI : MonoBehaviour
         if (fragmentText != null)
             fragmentText.text = $"Fragments: {collected}/{totalFragments}";
 
+        if (collected > 0)
+        {
+            currentTime += timeAddedPerFragment;
+        }
+
         if (collected >= totalFragments && !isVictory)
         {
             TriggerVictory();
         }
     }
     
-    private void TriggerGameOver()
-    {
-        isGameOver = true;
-        if (gameOverUI != null) gameOverUI.SetActive(true);
-        Time.timeScale = 0f;
-    }
-
     public void PlayerDied()
     {
-        if (!isGameOver)
-            TriggerGameOver();
+        TriggerGameOver("You died!");
     }
     
     public void TriggerGameOver(string reason = "")
     {
-        if (isGameOver) return;
+        if (isGameOver || isVictory) return;
         
         isGameOver = true;
         if (!string.IsNullOrEmpty(reason))
             Debug.Log($"Game Over: {reason}");
         
         if (gameOverUI != null) gameOverUI.SetActive(true);
-        Time.timeScale = 0f;
     }
     
     private void TriggerVictory()

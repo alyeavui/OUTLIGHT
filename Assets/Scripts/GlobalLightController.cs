@@ -6,8 +6,9 @@ public class GlobalLightController : MonoBehaviour
     public Light2D globalLight;
     public PlayerController player;
     public float victoryLightIntensity = 3f;
-    public float lightTransitionSpeed = 2f;
+    public float lightTransitionSpeed = 1.5f;
     public int totalFragments = 5;
+    
     private bool victoryTriggered = false;
     private float targetIntensity = 0f;
     
@@ -22,6 +23,7 @@ public class GlobalLightController : MonoBehaviour
             if (playerObj != null)
                 player = playerObj.GetComponent<PlayerController>();
         }
+
         if (globalLight != null)
             globalLight.intensity = 0f;
     }
@@ -29,11 +31,13 @@ public class GlobalLightController : MonoBehaviour
     void Update()
     {
         if (player == null || globalLight == null) return;
+
         if (player.fragments >= totalFragments && !victoryTriggered)
         {
             victoryTriggered = true;
             targetIntensity = victoryLightIntensity;
         }
+
         if (victoryTriggered)
         {
             globalLight.intensity = Mathf.Lerp(

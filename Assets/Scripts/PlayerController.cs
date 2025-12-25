@@ -13,10 +13,13 @@ public class PlayerController : MonoBehaviour
     public InputActionReference jumpAction;
     public Light2D playerLight;
     public float maxLightIntensity = 2f;
-    public float lightDecayRate = 0.1f;
+    public float lightDecayRate = 0.02f;
     public float intensityToBlink = 0.3f;
     public float blinkSpeed = 5f;
-    public float fragmentLightBonus = 1f;
+    public float fragmentLightBonus = 0.5f; 
+    public Color normalLightColor = Color.white;
+    public Color dangerLightColor = Color.red;
+    
     private Animator anim;
     private Rigidbody2D rb;
     private UI uiManager;
@@ -26,8 +29,10 @@ public class PlayerController : MonoBehaviour
     private int jumpCount = 0;
     private bool isOnStairs = false;
     private bool isClimbing = false;
+    private bool isDead = false;
     public int fragments { get; private set; }
     private float currentLightIntensity;
+    
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -39,8 +44,10 @@ public class PlayerController : MonoBehaviour
         {
             currentLightIntensity = maxLightIntensity;
             playerLight.intensity = currentLightIntensity;
+            playerLight.color = normalLightColor;
         }
     }
+    
     void Start()
     {
         if (uiManager != null)
@@ -63,6 +70,8 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
+        if (isDead) return;
+        
         moveInput = moveAction.action.ReadValue<Vector2>();
         
         HandleClimbing();
@@ -73,6 +82,8 @@ public class PlayerController : MonoBehaviour
     
     void FixedUpdate()
     {
+        if (isDead) return;
+        
         if (isClimbing)
         {
             rb.gravityScale = 0f;
@@ -112,19 +123,20 @@ public class PlayerController : MonoBehaviour
     
     private void HandleFlip()
     {
-        if (!isClimbing)
-        {
-            if (rb.linearVelocity.x > 0 && !faceRight)
-                Flip();
-            else if (rb.linearVelocity.x < 0 && faceRight)
-                Flip();
-        }
+        if (isClimbing) return;
+
+        if (moveInput.x > 0.1f && !faceRight)
+            Flip();
+        else if (moveInput.x < -0.1f && faceRight)
+            Flip();
     }
     
     private void Flip()
     {
-        transform.Rotate(0, 180, 0);
         faceRight = !faceRight;
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
     }
     
     private void HandleLight()
@@ -132,6 +144,11 @@ public class PlayerController : MonoBehaviour
         if (playerLight == null) return;
         currentLightIntensity -= lightDecayRate * Time.deltaTime;
         currentLightIntensity = Mathf.Max(currentLightIntensity, 0f);
+        if (currentLightIntensity <= 0f && !isDead)
+        {
+            TriggerDeath();
+            return;
+        }
         if (currentLightIntensity <= intensityToBlink && currentLightIntensity > 0f)
         {
             float blink = Mathf.PingPong(Time.time * blinkSpeed, 1);
@@ -147,14 +164,34 @@ public class PlayerController : MonoBehaviour
     {
         fragments++;
         currentLightIntensity = Mathf.Min(currentLightIntensity + fragmentLightBonus, maxLightIntensity);
-        
         if (uiManager != null)
             uiManager.UpdateFragmentUI(fragments);
     }
     
+    private void TriggerDeath()
+    {
+        isDead = true;
+        rb.linearVelocity = Vector2.zero;
+        if (playerLight != null)
+        {
+            playerLight.color = dangerLightColor;
+            playerLight.intensity = 0.5f;
+        }
+        if (uiManager != null)
+        {
+            Invoke(nameof(NotifyGameOver), 2f);
+        }
+    }
+    
+    private void NotifyGameOver()
+    {
+        if (uiManager != null)
+            uiManager.TriggerGameOver("The darkness consumed you!");
+    }
+    
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (isClimbing) return;
+        if (isClimbing || isDead) return;
         
         if (isGrounded || jumpCount < maxJumps)
         {
