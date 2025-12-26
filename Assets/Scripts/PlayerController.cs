@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
@@ -7,19 +8,18 @@ public class PlayerController : MonoBehaviour
 {
     private float moveSpeed = 5f;
     private float jumpForce = 6f;
-    public int maxJumps = 2;
-    public float climbSpeed = 3f;
-    public InputActionReference moveAction;
-    public InputActionReference jumpAction;
+    private int maxJumps = 2;
+    private float climbSpeed = 3f;
+    [SerializeField] private InputActionReference moveAction;
+    [SerializeField] private InputActionReference jumpAction;
     public Light2D playerLight;
     public float maxLightIntensity = 2f;
-    public float lightDecayRate = 0.02f;
-    public float intensityToBlink = 0.3f;
-    public float blinkSpeed = 5f;
-    public float fragmentLightBonus = 0.5f; 
-    public Color normalLightColor = Color.white;
-    public Color dangerLightColor = Color.red;
-    
+    private float lightDecayRate = 0.1f;
+    private float intensityToBlink = 0.3f;
+    private float blinkSpeed = 5f;
+    private float fragmentLightBonus = 0.5f; 
+    private Color normalLightColor = Color.white;
+    private Color dangerLightColor = Color.red;
     private Animator anim;
     private Rigidbody2D rb;
     private UI uiManager;
@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
     private bool isDead = false;
     public int fragments { get; private set; }
     private float currentLightIntensity;
+    private HashSet<int> collectedFragmentIds = new HashSet<int>();
     
     void Awake()
     {
@@ -160,8 +161,10 @@ public class PlayerController : MonoBehaviour
         }
     }
     
-    public void CollectFragment()
+    public void CollectFragment(int fragmentId)
     {
+        if (collectedFragmentIds.Contains(fragmentId)) return;
+        collectedFragmentIds.Add(fragmentId);
         fragments++;
         currentLightIntensity = Mathf.Min(currentLightIntensity + fragmentLightBonus, maxLightIntensity);
         if (uiManager != null)

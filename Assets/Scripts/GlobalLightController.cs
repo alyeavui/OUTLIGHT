@@ -3,12 +3,11 @@ using UnityEngine.Rendering.Universal;
 
 public class GlobalLightController : MonoBehaviour
 {
-    public Light2D globalLight;
-    public PlayerController player;
-    public float victoryLightIntensity = 3f;
-    public float lightTransitionSpeed = 1.5f;
-    public int totalFragments = 5;
-    
+    private Light2D globalLight;
+    private PlayerController player;
+    private float victoryLightIntensity = 3f;
+    private float lightTransitionSpeed = 1.5f;
+    private int totalFragments = 5;
     private bool victoryTriggered = false;
     private float targetIntensity = 0f;
     
