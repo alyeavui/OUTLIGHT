@@ -10,11 +10,13 @@ public class UI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI fragmentText;
     [SerializeField] private TextMeshProUGUI lightDebugText;
     [SerializeField] private Button restartButton;
+    [SerializeField] private Button nextLevelButton;
     [SerializeField] private GameObject exitDoor;
     [SerializeField] private int totalFragments = 5;
 
     private bool isGameOver = false;
     private bool isVictory = false;
+    private bool exitDoorUnlocked = false;
 
     void Start()
     {
@@ -28,6 +30,12 @@ public class UI : MonoBehaviour
             restartButton.onClick.AddListener(RestartLevel);
         }
 
+        if (nextLevelButton != null)
+        {
+            nextLevelButton.onClick.RemoveAllListeners();
+            nextLevelButton.onClick.AddListener(LoadNextLevel);
+        }
+
         UpdateFragmentUI(0);
     }
 
@@ -35,14 +43,12 @@ public class UI : MonoBehaviour
     {
         if (isGameOver || isVictory) return;
 
-        // Show light percentage only
         if (lightDebugText != null)
         {
             PlayerController player = FindFirstObjectByType<PlayerController>();
             if (player != null && player.playerLight != null)
             {
-                float percentage =
-                    (player.playerLight.intensity / player.maxLightIntensity) * 100f;
+                float percentage = (player.playerLight.intensity / player.maxLightIntensity) * 100f;
                 lightDebugText.text = $"Light: {percentage:F0}%";
             }
         }
@@ -53,9 +59,32 @@ public class UI : MonoBehaviour
         if (fragmentText != null)
             fragmentText.text = $"Fragments: {collected}/{totalFragments}";
 
-        if (collected >= totalFragments && !isVictory)
+        if (collected >= totalFragments && !exitDoorUnlocked)
+        {
+            UnlockExitDoor();
+        }
+    }
+
+    private void UnlockExitDoor()
+    {
+        exitDoorUnlocked = true;
+
+        if (exitDoor != null)
+        {
+            exitDoor.SetActive(true);
+            Debug.Log("Exit door unlocked! Find the exit to complete the level.");
+        }
+    }
+
+    public void OnPlayerReachedExit()
+    {
+        if (exitDoorUnlocked && !isVictory)
         {
             TriggerVictory();
+        }
+        else if (!exitDoorUnlocked)
+        {
+            Debug.Log("Exit is locked! Collect all fragments first.");
         }
     }
 
@@ -81,16 +110,31 @@ public class UI : MonoBehaviour
     {
         isVictory = true;
 
-        if (exitDoor != null)
-            exitDoor.SetActive(true);
-
         if (victoryUI != null)
             victoryUI.SetActive(true);
+
+        Time.timeScale = 0f;
+        
+        Debug.Log("Victory! Level completed!");
     }
 
     public void RestartLevel()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void LoadNextLevel()
+    {
+        Time.timeScale = 1f;
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        if (currentSceneName == "Level1")
+        {
+            SceneManager.LoadScene("Level2");
+        }
+        else if (currentSceneName == "Level2")
+        {
+            SceneManager.LoadScene("Level3");
+        }
     }
 }
