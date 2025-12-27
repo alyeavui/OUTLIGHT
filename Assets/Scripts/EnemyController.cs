@@ -8,11 +8,14 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float chaseSpeed = 4f;
     [SerializeField] private float detectionRange = 5f;
     [SerializeField] private float chaseRange = 8f; 
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color chaseColor = Color.red;
     private Transform player;
     private Transform currentTarget;
     private bool isChasing = false;
     private bool facingRight = true;
     private Vector3 patrolStartPosition;
+    private SpriteRenderer spriteRenderer;
    
     void Start()
     {
@@ -21,6 +24,12 @@ public class EnemyController : MonoBehaviour
             player = playerObj.transform;
         currentTarget = pointA;
         patrolStartPosition = transform.position;
+
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = normalColor;
+        }
     }
     
     void Update()
@@ -85,11 +94,17 @@ public class EnemyController : MonoBehaviour
     void StartChase()
     {
         isChasing = true;
+        if (spriteRenderer != null)
+            spriteRenderer.color = chaseColor;
     }
     
     void StopChase()
     {
         isChasing = false;
+        
+        if (spriteRenderer != null)
+            spriteRenderer.color = normalColor;
+
         float distA = Vector2.Distance(transform.position, pointA.position);
         float distB = Vector2.Distance(transform.position, pointB.position);
         currentTarget = (distA < distB) ? pointA : pointB;
