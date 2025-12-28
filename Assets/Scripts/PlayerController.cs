@@ -175,21 +175,21 @@ public class PlayerController : MonoBehaviour
     {
         isDead = true;
         rb.linearVelocity = Vector2.zero;
+        
         if (playerLight != null)
         {
             playerLight.color = dangerLightColor;
             playerLight.intensity = 0.5f;
         }
-        if (uiManager != null)
-        {
-            Invoke(nameof(NotifyGameOver), 2f);
-        }
+        Invoke(nameof(NotifyGameOver), 2f);
     }
     
     private void NotifyGameOver()
-    {
+    {    
         if (uiManager != null)
-            uiManager.TriggerGameOver("The darkness consumed you!");
+        {
+            uiManager.PlayerDied();
+        }
     }
     
     private void OnJump(InputAction.CallbackContext context)

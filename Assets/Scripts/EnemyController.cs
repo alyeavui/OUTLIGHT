@@ -135,11 +135,16 @@ public class EnemyController : MonoBehaviour
     void KillPlayer(GameObject playerObj)
     {
         if (playerObj.TryGetComponent<PlayerController>(out var playerController))
+        {
             playerController.enabled = false;
+        }
         UI uiManager = FindFirstObjectByType<UI>();
         if (uiManager != null)
+        {
             uiManager.PlayerDied();
+        }
     }
+    
     void OnDrawGizmosSelected()
     {
         if (pointA != null && pointB != null)

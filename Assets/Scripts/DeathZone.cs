@@ -2,21 +2,23 @@ using UnityEngine;
 
 public class DeathZone : MonoBehaviour
 {
-    public GameObject gameOverUI;
-    public float freezeDelay = 0.1f; 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
-            StartCoroutine(TriggerGameOver());
+            UI uiManager = FindFirstObjectByType<UI>();
+            if (uiManager != null)
+            {
+                uiManager.PlayerDied();
+            }
+            else
+            {
+                Debug.LogError("DeathZone: UI Manager not found!");
+            }
+            if (collision.TryGetComponent<PlayerController>(out var player))
+            {
+                player.enabled = false;
+            }
         }
-    }
-
-    private System.Collections.IEnumerator TriggerGameOver()
-    {
-        yield return new WaitForSeconds(freezeDelay);
-        if (gameOverUI != null)
-            gameOverUI.SetActive(true);
-        Time.timeScale = 0f;
     }
 }

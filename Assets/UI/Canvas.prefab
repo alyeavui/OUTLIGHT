@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1952868699070233654}
   - component: {fileID: 1283155938884989780}
   - component: {fileID: 8988316133228860555}
-  - component: {fileID: 5679853711592872134}
+  - component: {fileID: -8096015057964180736}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &5679853711592872134
+--- !u!114 &-8096015057964180736
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,8 +117,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc107b008ccf84ac7addbafe50a64ef8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI
+  inGameUI: {fileID: 2037142210409487747}
+  winUI: {fileID: 1616777634928968828}
   gameOverUI: {fileID: 5885750178037908439}
-  victoryUI: {fileID: 1616777634928968828}
   fragmentText: {fileID: 1438251694055108488}
   lightDebugText: {fileID: 424528790186555155}
   restartButton: {fileID: 1940748859628195570}

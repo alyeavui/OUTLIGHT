@@ -54,6 +54,9 @@ TagManager:
   - name: bg4
     uniqueID: 1550324341
     locked: 0
+  - name: bg5
+    uniqueID: 1739641581
+    locked: 0
   - name: Ground
     uniqueID: 2173384981
     locked: 0

@@ -1,12 +1,13 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class UI : MonoBehaviour
 {
+    [SerializeField] private GameObject inGameUI;
+    [SerializeField] private GameObject winUI;
     [SerializeField] private GameObject gameOverUI;
-    [SerializeField] private GameObject victoryUI;
     [SerializeField] private TextMeshProUGUI fragmentText;
     [SerializeField] private TextMeshProUGUI lightDebugText;
     [SerializeField] private Button restartButton;
@@ -18,10 +19,20 @@ public class UI : MonoBehaviour
     private bool isVictory = false;
     private bool exitDoorUnlocked = false;
 
-    void Start()
+    public static UI Instance;
+
+    private void Awake()
     {
+        if (Instance != null && Instance != this)
+            Destroy(Instance.gameObject);
+
+        Instance = this;
+
+        Time.timeScale = 1f;
+
+        if (inGameUI != null) inGameUI.SetActive(true);
+        if (winUI != null) winUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
-        if (victoryUI != null) victoryUI.SetActive(false);
         if (exitDoor != null) exitDoor.SetActive(false);
 
         if (restartButton != null)
@@ -39,13 +50,19 @@ public class UI : MonoBehaviour
         UpdateFragmentUI(0);
     }
 
-    void Update()
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    private void Update()
     {
         if (isGameOver || isVictory) return;
 
         if (lightDebugText != null)
         {
-            PlayerController player = FindFirstObjectByType<PlayerController>();
+            var player = FindFirstObjectByType<PlayerController>();
             if (player != null && player.playerLight != null)
             {
                 float percentage = (player.playerLight.intensity / player.maxLightIntensity) * 100f;
@@ -60,62 +77,49 @@ public class UI : MonoBehaviour
             fragmentText.text = $"Fragments: {collected}/{totalFragments}";
 
         if (collected >= totalFragments && !exitDoorUnlocked)
-        {
             UnlockExitDoor();
-        }
     }
 
     private void UnlockExitDoor()
     {
         exitDoorUnlocked = true;
-
         if (exitDoor != null)
-        {
             exitDoor.SetActive(true);
-            Debug.Log("Exit door unlocked! Find the exit to complete the level.");
-        }
     }
 
     public void OnPlayerReachedExit()
     {
         if (exitDoorUnlocked && !isVictory)
-        {
-            TriggerVictory();
-        }
-        else if (!exitDoorUnlocked)
-        {
-            Debug.Log("Exit is locked! Collect all fragments first.");
-        }
+            ShowWinUI();
     }
 
     public void PlayerDied()
     {
-        TriggerGameOver("You died!");
+        ShowGameOverUI("You died!");
     }
 
-    public void TriggerGameOver(string reason = "")
+    public void ShowGameOverUI(string reason = "")
     {
         if (isGameOver || isVictory) return;
 
         isGameOver = true;
 
-        if (!string.IsNullOrEmpty(reason))
-            Debug.Log($"Game Over: {reason}");
-
-        if (gameOverUI != null)
-            gameOverUI.SetActive(true);
-    }
-
-    private void TriggerVictory()
-    {
-        isVictory = true;
-
-        if (victoryUI != null)
-            victoryUI.SetActive(true);
+        if (inGameUI != null) inGameUI.SetActive(false);
+        if (gameOverUI != null) gameOverUI.SetActive(true);
 
         Time.timeScale = 0f;
-        
-        Debug.Log("Victory! Level completed!");
+    }
+
+    public void ShowWinUI()
+    {
+        if (isVictory || isGameOver) return;
+
+        isVictory = true;
+
+        if (inGameUI != null) inGameUI.SetActive(false);
+        if (winUI != null) winUI.SetActive(true);
+
+        Time.timeScale = 0f;
     }
 
     public void RestartLevel()
@@ -127,14 +131,11 @@ public class UI : MonoBehaviour
     public void LoadNextLevel()
     {
         Time.timeScale = 1f;
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        if (currentSceneName == "Level1")
-        {
-            SceneManager.LoadScene("Level2");
-        }
-        else if (currentSceneName == "Level2")
-        {
-            SceneManager.LoadScene("Level3");
-        }
+        int currentIndex = SceneManager.GetActiveScene().buildIndex;
+
+        if (currentIndex < SceneManager.sceneCountInBuildSettings - 1)
+            SceneManager.LoadScene(currentIndex + 1);
+        else
+            Debug.Log("Last level reached!");
     }
 }
