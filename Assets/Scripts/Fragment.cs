@@ -12,6 +12,9 @@ public class Fragment : MonoBehaviour
             if (collision.gameObject.TryGetComponent<PlayerController>(out var player))
             {
                 collected = true;
+                //ВОТ ЗДЕСЬ ЗВУК
+                if (SoundManager.Instance != null)
+                    SoundManager.Instance.PlayFragmentSound();
                 player.CollectFragment(gameObject.GetInstanceID());
                 Destroy(gameObject);
             }
