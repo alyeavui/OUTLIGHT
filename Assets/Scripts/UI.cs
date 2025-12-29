@@ -24,7 +24,10 @@ public class UI : MonoBehaviour
     private void Awake()
     {
         if (Instance != null && Instance != this)
-            Destroy(Instance.gameObject);
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         Instance = this;
 
@@ -95,7 +98,15 @@ public class UI : MonoBehaviour
 
     public void PlayerDied()
     {
-        ShowGameOverUI("You died!");
+        DeathVideoController deathVideo = DeathVideoController.GetInstance();
+        if (deathVideo != null)
+        {
+            deathVideo.PlayDeathVideo();
+        }
+        else
+        {
+            ShowGameOverUI("You died!");
+        }
     }
 
     public void ShowGameOverUI(string reason = "")
@@ -125,17 +136,19 @@ public class UI : MonoBehaviour
     public void RestartLevel()
     {
         Time.timeScale = 1f;
+        isGameOver = false;
+        isVictory = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void LoadNextLevel()
     {
         Time.timeScale = 1f;
+        isGameOver = false;
+        isVictory = false;
         int currentIndex = SceneManager.GetActiveScene().buildIndex;
 
         if (currentIndex < SceneManager.sceneCountInBuildSettings - 1)
             SceneManager.LoadScene(currentIndex + 1);
-        else
-            Debug.Log("Last level reached!");
     }
 }
